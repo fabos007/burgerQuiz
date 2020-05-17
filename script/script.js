@@ -1,3 +1,4 @@
+//upload of DOM tree before action taken 
 document.addEventListener("DOMContentLoaded", function () {
     "use strict";
 
@@ -7,8 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
         questionTitle = document.querySelector("#question"),
         formAnswers = document.querySelector("#formAnswers"),
         prevButton = document.querySelector("#prev"),
-        nextButton = document.querySelector("#next");
+        nextButton = document.querySelector("#next"),
+        sendButton = document.querySelector('#send')
 
+    // array of objects with questions 
     const questions = [{
             question: "Какого цвета бургер?",
             answers: [{
@@ -80,27 +83,27 @@ document.addEventListener("DOMContentLoaded", function () {
     ];
 
 
-
+    // open modal 
     btnOpenModel.addEventListener("click", () => {
         modalBlock.classList.add("d-block");
         playTest();
 
     });
 
+    //close modal
     btnCloseModal.addEventListener("click", () => {
         modalBlock.classList.remove("d-block");
     });
 
+    //start of testing
     const playTest = () => {
+        //object of answers from user 
+        const finalAnswers = [];
 
+        // number of Question 
         let numberQuestion = 0;
-        if (numberQuestion == 0) {
-            prevButton.style.display = 'none'
-        } else {
-            prevButton.style.display = 'block'
-        }
 
-
+        // render of our answers based on questions Arr 
         const renderAnswers = (index) => {
             questions[index].answers.forEach((answer) => {
                 const answerItem = document.createElement('div');
@@ -108,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 answerItem.classList.add('answers-item', 'd-flex', 'flex-column');
 
                 answerItem.innerHTML = `                    
-                    <input type="${questions[index].type}" id="${answer.title}" name="answer" class="d-none">
+                    <input type="${questions[index].type}" id="${answer.title}" name="answer" class="d-none" value = "${answer.title}">
                     <label for="${answer.title}" class="d-flex flex-column justify-content-between">
                     <img class="answerImg" src=${answer.url} alt="burger">
                     <span>${answer.title}</span>
@@ -118,24 +121,61 @@ document.addEventListener("DOMContentLoaded", function () {
             })
         };
 
+        // create questions on the page among with answers 
         const renderQuestions = (indexQuestion) => {
-
+            //remove items from form 
             formAnswers.innerHTML = ``;
 
-            questionTitle.textContent = `${questions[indexQuestion].question}`;
+            //verify that our questions will render correctly 
+            if (numberQuestion >= 0 && numberQuestion <= questions.length - 1) {
+                questionTitle.textContent = `${questions[indexQuestion].question}`;
+                renderAnswers(indexQuestion);
+                nextButton.classList.remove('d-none');
+                prevButton.classList.remove('d-none');
+                sendButton.classList.add('d-none')
 
-            renderAnswers(indexQuestion);
+            };
 
-        };
+            if (numberQuestion === 0) {
+                prevButton.classList.add('d-none');
 
+            };
+            if (numberQuestion === questions.length) {
+                prevButton.classList.add('d-none');
+                nextButton.classList.add('d-none');
+                sendButton.classList.remove('d-none');
+                formAnswers.innerHTML = `
+                <div class = "form-group">
+                    <label for="numberPhone">Enter your number</label>
+                    <input type="phone" class="form-control" id="numberPhone">
+                </div>
+                `
+            };
+
+        }
+
+        //start render questions 
         renderQuestions(numberQuestion);
 
-        nextButton.onclick = () => {
-            numberQuestion++;
+        const checkAnswer = () => {
+            const obj = {};
+            const inputs = [...formAnswers.elements].filter((input) => input.checked);
 
+            inputs.forEach((input, index) => {
+                obj[`${index}_${questions[numberQuestion].question}`] = input.value;
+            });
+            finalAnswers.push(obj);
+
+        }
+
+        //Next button
+        nextButton.onclick = () => {
+            checkAnswer();
+            numberQuestion++;
             renderQuestions(numberQuestion++);
 
         }
+        //Prev button
         prevButton.onclick = () => {
             numberQuestion--;
             renderQuestions(numberQuestion);
