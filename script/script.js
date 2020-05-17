@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
             questions[index].answers.forEach((answer) => {
                 const answerItem = document.createElement('div');
 
-                answerItem.classList.add('answers-item', 'd-flex', 'flex-column');
+                answerItem.classList.add('answers-item', 'd-flex', 'justify-content-center');
 
                 answerItem.innerHTML = `                    
                     <input type="${questions[index].type}" id="${answer.title}" name="answer" class="d-none" value = "${answer.title}">
@@ -127,30 +127,36 @@ document.addEventListener("DOMContentLoaded", function () {
             formAnswers.innerHTML = ``;
 
             //verify that our questions will render correctly 
-            if (numberQuestion >= 0 && numberQuestion <= questions.length - 1) {
-                questionTitle.textContent = `${questions[indexQuestion].question}`;
-                renderAnswers(indexQuestion);
-                nextButton.classList.remove('d-none');
-                prevButton.classList.remove('d-none');
-                sendButton.classList.add('d-none')
+            switch (true) {
 
-            };
-
-            if (numberQuestion === 0) {
-                prevButton.classList.add('d-none');
-
-            };
-            if (numberQuestion === questions.length) {
-                prevButton.classList.add('d-none');
-                nextButton.classList.add('d-none');
-                sendButton.classList.remove('d-none');
-                formAnswers.innerHTML = `
-                <div class = "form-group">
-                    <label for="numberPhone">Enter your number</label>
-                    <input type="phone" class="form-control" id="numberPhone">
-                </div>
-                `
-            };
+                case (numberQuestion >= 0 && numberQuestion <= questions.length - 1):
+                    questionTitle.textContent = `${questions[indexQuestion].question}`;
+                    renderAnswers(indexQuestion);
+                    nextButton.classList.remove('d-none');
+                    prevButton.classList.remove('d-none');
+                    sendButton.classList.add('d-none')
+                    break;
+                case (numberQuestion === 0):
+                    prevButton.classList.add('d-none');
+                    break;
+                case (numberQuestion === questions.length):
+                    prevButton.classList.add('d-none');
+                    nextButton.classList.add('d-none');
+                    sendButton.classList.remove('d-none');
+                    formAnswers.innerHTML = `
+                    <div class = "form-group">
+                        <label for="numberPhone">Enter your number</label>
+                        <input type="phone" class="form-control" id="numberPhone">
+                    </div>
+                    `
+                    break;
+                case (numberQuestion === questions.length + 1):
+                    formAnswers.textContent = "Cпасибо за пройденый тест";
+                    setTimeout(() => {
+                        modalBlock.classList.remove('d-block')
+                    }, 2000);
+                    break;
+            }
 
         }
 
@@ -159,10 +165,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const checkAnswer = () => {
             const obj = {};
-            const inputs = [...formAnswers.elements].filter((input) => input.checked);
+            const inputs = [...formAnswers.elements].filter((input) => input.checked || input.id === 'numberPhone');
 
             inputs.forEach((input, index) => {
-                obj[`${index}_${questions[numberQuestion].question}`] = input.value;
+                if (numberQuestion >= 0 && numberQuestion <= questions.length - 1) {
+                    obj[`${index}_${questions[numberQuestion].question}`] = input.value;
+                }
+                if (numberQuestion === questions.length) {
+                    obj['Номер телефона'] = input.value;
+                }
             });
             finalAnswers.push(obj);
 
@@ -172,7 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
         nextButton.onclick = () => {
             checkAnswer();
             numberQuestion++;
-            renderQuestions(numberQuestion++);
+            renderQuestions(numberQuestion);
 
         }
         //Prev button
@@ -180,7 +191,12 @@ document.addEventListener("DOMContentLoaded", function () {
             numberQuestion--;
             renderQuestions(numberQuestion);
         }
+        sendButton.onclick = () => {
+            numberQuestion++;
+            renderQuestions(numberQuestion);
+            checkAnswer();
 
+        }
 
     };
 });
